@@ -1,0 +1,7 @@
+version: '3'
+services: 
+  watcher: 
+    container_name: watcher
+    build:
+      context: .
+  
