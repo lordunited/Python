@@ -132,7 +132,7 @@ class appImport(unittest.TestCase):
         driver.find_element_by_id("FullAddress").clear()
         driver.find_element_by_id("EnFullAddress").click()
         driver.find_element_by_id("EnFullAddress").clear()
-        driver.find_element_by_id("EnFullAddress").send_keys("Fanavari Pardis Park 5th Noavari")
+        driver.find_element_by_id("EnFullAddress").send_keys("tehran")
         driver.find_element_by_id("FirstReagentFullName").click()
         driver.find_element_by_id("FirstReagentFullName").clear()
         driver.find_element_by_id("FirstReagentPhoneNo").click()
