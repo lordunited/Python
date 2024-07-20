@@ -4,22 +4,22 @@ import os
 import sys
 import glob
 from dotenv import load_dotenv
-#from threading import Thread
+from threading import Thread
 
 ###Progress class ENV
-# _BAR_SIZE = 20
-# _KILOBYTE = 1024
-# _FINISHED_BAR = '#'
-# _REMAINING_BAR = '-'
-# _UNKNOWN_SIZE = '?'
-# _STR_MEGABYTE = ' MB'
-# _HOURS_OF_ELAPSED = '%d:%02d:%02d'
-# _MINUTES_OF_ELAPSED = '%02d:%02d'
-# _RATE_FORMAT = '%5.2f'
-# _PERCENTAGE_FORMAT = '%3d%%'
-# _HUMANINZED_FORMAT = '%0.2f'
-# _DISPLAY_FORMAT = '|%s| %s/%s %s [elapsed: %s left: %s, %s MB/sec]'
-# _REFRESH_CHAR = '\r'
+_BAR_SIZE = 20
+_KILOBYTE = 1024
+_FINISHED_BAR = '#'
+_REMAINING_BAR = '-'
+_UNKNOWN_SIZE = '?'
+_STR_MEGABYTE = ' MB'
+_HOURS_OF_ELAPSED = '%d:%02d:%02d'
+_MINUTES_OF_ELAPSED = '%02d:%02d'
+_RATE_FORMAT = '%5.2f'
+_PERCENTAGE_FORMAT = '%3d%%'
+_HUMANINZED_FORMAT = '%0.2f'
+_DISPLAY_FORMAT = '|%s| %s/%s %s [elapsed: %s left: %s, %s MB/sec]'
+_REFRESH_CHAR = '\r'
 ###
 ###MINIO_CLASS_ENV
 # Load environment variables from the .env file
@@ -48,7 +48,7 @@ client_second = Minio(MINIO_SECOND_ADDRES,access_key=MINIO_SECOND_ACCESS_KEY,sec
 
 class minio:
     def __init__(self):
-      print('Hello')
+      print('Minio class')
     def login(self,address,accesskey,secretkey):
       minioClient = Minio(address,access_key=accesskey,secret_key=secretkey,secure=True)
       self.minio_clients = minioClient
@@ -66,18 +66,12 @@ class minio:
         for root, _ , files in os.walk(cosntructed_path):
             for file in files:
                 join_paths = os.path.join( root , file)
-              #  print(cosntructed_path)
-               # print(join_paths)
-                      # Check if object exists in the bucket
-           #     print(join_paths)
                 parts = join_paths.split(bucket_name, 1)
                 if len(parts) > 1:
         # Extract the object address (relative path within the bucket)
                     object_address = parts[1].strip("/")
                     object_addresses.append(object_address)
             for address in object_addresses:
-              #  print(address)
-            #    print(f"- {address}")
                 print(join_paths)
                 try:
                     # Attempt to get object stat (raises an exception if it doesn't exist)
@@ -92,40 +86,6 @@ class minio:
                     else:
                         print(f"An error occurred checking '{address}': {err}")
 
-
-
-        # for local_file in glob.glob(local_path + '/**/**'):
-        #       print(local_file)
-        #       local_file = local_file.replace(os.sep, "/")
-        #       if local_file in object_names:
-        #           found_match = True
-        #           print("break if local == bucket_file")
-        #           break
-        #       else:
-        #         print("else of localfile == bucket_file ")
-        #         if not os.path.isfile(local_file):
-        #             print("with if")
-        #             client_second.upload_object(local_file, bucket_name, minio_path + "/" + os.path.basename(local_file))
-        #         else:
-        #             remote_path = os.path.join(minio_path, local_file[1 + len(local_path):])
-        #             remote_path = remote_path.replace(os.sep, "/")  # Replace \ with / on Windows
-        #             #client.fput_object(bucket_name, remote_path, local_file,progress=Progress(),
-        #             client_second.fput_object(bucket_name, remote_path, local_file,)
-
-                  #self.login_var.fput_object(bucket_name, remote_path, local_file,)
-              
-              # Replace \ with / on Windows
-              # if not os.path.isfile(local_file):
-              #     self.upload_object(
-              #         local_file, bucket_name, minio_path + "/" + os.path.basename(local_file))
-              # else:
-              #     remote_path = os.path.join(
-              #         minio_path, local_file[1 + len(local_path):])
-              #     remote_path = remote_path.replace(
-              #         os.sep, "/")  # Replace \ with / on Windows
-              #     #client.fput_object(bucket_name, remote_path, local_file,progress=Progress(),
-              #     client_second.fput_object(bucket_name, remote_path, local_file,)
-        #      print(local_file)
         
     def list_file(self,bucket,type):
       if type == "download":
@@ -141,18 +101,61 @@ class minio:
           print(obj.object_name)
         return objects
     def download_object(self,bucket,path):
+        object_addresses = []
+
+        print("start donwloading")
+        self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
+        list_dir = []
+        constructed_path = path + "/" + bucket
+        print(constructed_path)
+        for root, _ , files in os.walk(constructed_path):
+            for file in files:
+                constructed_path_local = root + "/" + file
+                list_dir.append(constructed_path_local)
+        
+        for item in self.login_var.list_objects(bucket,recursive=True):
+          print(path + "/" + bucket + "/" + item.object_name)
+          bucket_construced_path = path + "/" + bucket + "/" + item.object_name
+          if bucket_construced_path in list_dir:
+            print("object exist in ", path)
+          else:
+            self.login_var.fget_object(bucket,item.object_name,bucket_construced_path)
+
+        
+                
+
+      #   for item in self.login_var.list_objects(bucket,recursive=True):
+      #       direct_path = path  + '/' + bucket + '/' + item.object_name 
+      #       object_addresses.append(direct_path)
+      #  # print(object_addresses[1])
+      #   constructed_path  = path + "/" + bucket
+      #   for root, _ , files in os.walk(constructed_path):
+      #       for file in files:
+      #           constructed_path_local = root + file
+      #      #     print(constructed_path_local)
+      #           if constructed_path_local in object_addresses: 
+      #              print("object", constructed_path_local , "exists")
+                # else:
+                #   print("downloading" ,constructed_path_local )
+                #   self.login_var.fget_object(bucket,item.object_name,direct_path)
+        print("downloading have finished")
+    def download_object_second(self,bucket,path):
+        print("start donwloading")
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
         for item in self.login_var.list_objects(bucket,recursive=True):
+            print("start listing")
             direct_path = path  + '/' + bucket + '/' + item.object_name 
-            print(direct_path)
-            for local_file in glob.glob(direct_path + '/**'):
-              local_file = local_file.replace(os.sep, "/") # Replace \ with / on Windows
-              if not os.path.isfile(local_file):
-                self.login_var.fget_object(bucket,item.object_name,direct_path)
-                print(bucket,item.object_name)
-              else:
-                return 0
-#            self.login_var.fget_object(bucket,item.object_name,direct_path)
+            print(item.object_name)
+            self.login_var.fget_object(bucket,item.object_name,direct_path)
+            # for local_file in glob.glob(direct_path + '/**'):
+            #   local_file = local_file.replace(os.sep, "/") # Replace \ with / on Windows
+            #   print("Start downloading")
+            #   if not os.path.ex(local_file):
+            #     self.login_var.fget_object(bucket,item.object_name,direct_path)
+            #     print(bucket,item.object_name,"if worked")
+            #   else:
+            #     self.login_var.fget_object(bucket,item.object_name,direct_path)
+            #     print("else worked")
     def list_sort_file(self,bucket):
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
         sort_data = dict()
@@ -295,13 +298,6 @@ class minio:
 #                               elapsed_str, left_str, rate)
 
 #######################################PROGRESS CLASS########################
-#minio().list_file("irancard-stage")
-#minio().download_object("irancard-stage",'/home/mohammadreza/minio')
-#minio().upload_object
-#print("start Uploading")
-#print(sys.argv[1],sys.argv[2])
-minio().upload_object(sys.argv[1],sys.argv[2],"/")
-#print("finish uploading")
-
-
-
+minio().download_object("hamrahcard",'/home/mohammadreza/minio')
+#minio().list_file("hamrahcard","download")
+#minio().upload_object("/home/mohammadreza/minio/hamrahcard/","hamrahcard","/")
