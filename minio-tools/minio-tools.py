@@ -59,20 +59,27 @@ class minio:
       for bucket in buckets:
         print(bucket.name, bucket.creation_date)
     def upload_object(self,local_path,bucket_name, minio_path):
+        print("start uploading")
         self.second_login_var = self.login(MINIO_SECOND_ADDRES,MINIO_SECOND_ACCESS_KEY,MINIO_SECOND_SECRET_KEY)
-        cosntructed_path = local_path + "/" + bucket_name
+        cosntructed_path = local_path + bucket_name
         object_addresses = []
-
+        counter_name = 0
         for root, _ , files in os.walk(cosntructed_path):
             for file in files:
+                counter_name = 0
                 join_paths = os.path.join( root , file)
                 parts = join_paths.split(bucket_name, 1)
                 if len(parts) > 1:
         # Extract the object address (relative path within the bucket)
+        #add dict in list file
+
                     object_address = parts[1].strip("/")
+                    
                     object_addresses.append(object_address)
-            for address in object_addresses:
-                print(join_paths)
+            counter = 0 
+        for address in object_addresses:
+                counter = counter +1
+                
                 try:
                     # Attempt to get object stat (raises an exception if it doesn't exist)
                     self.second_login_var.stat_object(bucket_name, address)
@@ -85,8 +92,7 @@ class minio:
                         self.second_login_var.fput_object(bucket_name, address , join_paths)
                     else:
                         print(f"An error occurred checking '{address}': {err}")
-
-        
+                    print(len(object_addresses))
     def list_file(self,bucket,type):
       if type == "download":
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
@@ -139,23 +145,7 @@ class minio:
                 #   print("downloading" ,constructed_path_local )
                 #   self.login_var.fget_object(bucket,item.object_name,direct_path)
         print("downloading have finished")
-    def download_object_second(self,bucket,path):
-        print("start donwloading")
-        self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
-        for item in self.login_var.list_objects(bucket,recursive=True):
-            print("start listing")
-            direct_path = path  + '/' + bucket + '/' + item.object_name 
-            print(item.object_name)
-            self.login_var.fget_object(bucket,item.object_name,direct_path)
-            # for local_file in glob.glob(direct_path + '/**'):
-            #   local_file = local_file.replace(os.sep, "/") # Replace \ with / on Windows
-            #   print("Start downloading")
-            #   if not os.path.ex(local_file):
-            #     self.login_var.fget_object(bucket,item.object_name,direct_path)
-            #     print(bucket,item.object_name,"if worked")
-            #   else:
-            #     self.login_var.fget_object(bucket,item.object_name,direct_path)
-            #     print("else worked")
+
     def list_sort_file(self,bucket):
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
         sort_data = dict()
@@ -298,6 +288,6 @@ class minio:
 #                               elapsed_str, left_str, rate)
 
 #######################################PROGRESS CLASS########################
-minio().download_object("hamrahcard",'/home/mohammadreza/minio')
+#minio().download_object("irancard",'/home/mohammadreza/minio')
 #minio().list_file("hamrahcard","download")
-#minio().upload_object("/home/mohammadreza/minio/hamrahcard/","hamrahcard","/")
+minio().upload_object("/home/mohammadreza/minio/","irancard","/")
