@@ -288,12 +288,8 @@ class minio:
 #                               elapsed_str, left_str, rate)
 
 #######################################PROGRESS CLASS########################
-<<<<<<< HEAD
-#minio().download_object("irancard",'/home/mohammadreza/minio')
-#minio().list_file("hamrahcard","download")
-minio().upload_object("/home/mohammadreza/minio/","irancard","/")
-=======
+#minio().download_object("bucket",'/home/mohammadreza/minio')
+minio().upload_object("/home/mohammadreza/minio/","bucket","/")
 minio().download_object("bucket",'/home/mohammadreza/minio')
 #minio().list_file("bucket","download")
 #minio().upload_object("/home/mohammadreza/minio/bucket/","bucket","/")
->>>>>>> 786a8024e54ac5a2efea575082c5e37118909c5c
