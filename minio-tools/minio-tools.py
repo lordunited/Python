@@ -64,35 +64,46 @@ class minio:
         cosntructed_path = local_path + bucket_name
         object_addresses = []
         counter_name = 0
+        object_minio_address = []
+        objects = self.second_login_var.list_objects(bucket_name,prefix='',recursive=True)
+        for obj in objects:
+          object_minio_address.append(obj.object_name)
+                
+
         for root, _ , files in os.walk(cosntructed_path):
             for file in files:
-                counter_name = 0
+                counter_name = counter_name + 1
+
                 join_paths = os.path.join( root , file)
                 parts = join_paths.split(bucket_name, 1)
-                if len(parts) > 1:
-        # Extract the object address (relative path within the bucket)
-        #add dict in list file
+        #         if len(parts) > 0:
+        # # Extract the object address (relative path within the bucket)
+        # #add dict in list file
 
-                    object_address = parts[1].strip("/")
-                    
-                    object_addresses.append(object_address)
-            counter = 0 
-        for address in object_addresses:
-                counter = counter +1
-                
-                try:
-                    # Attempt to get object stat (raises an exception if it doesn't exist)
-                    self.second_login_var.stat_object(bucket_name, address)
-                    print(f"Object '{address}' already exists in the bucket.")
-                    continue
-                except Exception as err:
-                    # Likely a NoSuchKey error if the object doesn't exist
-                    if "NoSuchKey" in str(err):
-                        print(f"Uploading object: {address}")
-                        self.second_login_var.fput_object(bucket_name, address , join_paths)
-                    else:
-                        print(f"An error occurred checking '{address}': {err}")
-                    print(len(object_addresses))
+                object_address = str(parts[1].strip("/"))
+          #         else:
+                object_addresses.append(object_address)
+        for a in object_addresses:
+           if a in object_minio_address:
+             print("object exist",a)
+           else:
+              print("uploading",a)
+              final_path = local_path + bucket_name + "/" + a
+              self.second_login_var.fput_object(bucket_name, a , final_path)
+              
+                # try:
+                #     # Attempt to get object stat (raises an exception if it doesn't exist)
+                #     self.second_login_var.stat_object(bucket_name, address)
+                #     print(f"Object '{address}' already exists in the bucket.")
+                #     continue
+                # except Exception as err:
+                #     # Likely a NoSuchKey error if the object doesn't exist
+                #     if "NoSuchKey" in str(err):
+                #         print(f"Uploading object: {address}")
+                #         self.second_login_var.fput_object(bucket_name, address , join_paths)
+                #     else:
+                #         print(f"An error occurred checking '{address}': {err}")
+                #     print(len(object_addresses))
     def list_file(self,bucket,type):
       if type == "download":
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
@@ -119,15 +130,14 @@ class minio:
                 constructed_path_local = root + "/" + file
                 list_dir.append(constructed_path_local)
         
-        for item in self.login_var.list_objects(bucket,recursive=True):
+        for item in self.login_var.list_objects(bucket,prefix='',recursive=True):
           print(path + "/" + bucket + "/" + item.object_name)
           bucket_construced_path = path + "/" + bucket + "/" + item.object_name
           if bucket_construced_path in list_dir:
             print("object exist in ", path)
           else:
             self.login_var.fget_object(bucket,item.object_name,bucket_construced_path)
-
-        
+        print(len(object_addresses))
                 
 
       #   for item in self.login_var.list_objects(bucket,recursive=True):
@@ -288,8 +298,8 @@ class minio:
 #                               elapsed_str, left_str, rate)
 
 #######################################PROGRESS CLASS########################
+#minio().download_object("hamrahcard",'/home/mohammadreza/minio')
+#minio().upload_object("/home/mohammadreza/minio/","hamrahcard","/")
 #minio().download_object("bucket",'/home/mohammadreza/minio')
-minio().upload_object("/home/mohammadreza/minio/","bucket","/")
-minio().download_object("bucket",'/home/mohammadreza/minio')
-#minio().list_file("bucket","download")
+minio().list_file("hamrahcard","download")
 #minio().upload_object("/home/mohammadreza/minio/bucket/","bucket","/")
