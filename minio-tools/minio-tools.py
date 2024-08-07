@@ -3,6 +3,8 @@ import urllib.request
 import os
 import sys
 import glob
+import magic
+import mimetypes
 from dotenv import load_dotenv
 from threading import Thread
 
@@ -43,8 +45,157 @@ client_second = Minio(MINIO_SECOND_ADDRES,access_key=MINIO_SECOND_ACCESS_KEY,sec
 ###
 #using self in class is  way to call def of class in another def. we call it instance. 
 
- 
+def check_file_type(file_path):
+  """
+  Checks the file type of a given file.
 
+  Args:
+    file_path: The path to the file.
+
+  Returns:
+    A tuple of (file_extension, mime_type).
+  """
+
+  # Get the file extension
+  file_extension = os.path.splitext(file_path)[1].lower()
+
+  # Get the MIME type
+  mime_type, _ = mimetypes.guess_type(file_path)
+
+  return file_extension, mime_type
+
+def show_extension(file_path):
+    """
+    Adds an appropriate extension to a file path.
+
+    Args:
+        file_path: Path to the file.
+
+    Returns:
+        The updated file path with an extension.
+    """
+
+    base_name, ext = os.path.splitext(file_path)
+
+    if ext:
+        return file_path  # File already has an extension
+
+    mime = magic.from_file(file_path, mime=True)
+    extension = get_extension_from_mime(mime)
+
+    if extension:
+        return extension
+
+
+
+def add_extension(file_path):
+    """
+    Adds an appropriate extension to a file path.
+
+    Args:
+        file_path: Path to the file.
+
+    Returns:
+        The updated file path with an extension.
+    """
+
+    base_name, ext = os.path.splitext(file_path)
+
+    if ext:
+        return file_path  # File already has an extension
+
+    mime = magic.from_file(file_path, mime=True)
+    extension = get_extension_from_mime(mime)
+
+    if extension:
+        return base_name + extension
+
+    return base_name + ".bin"  # Default extension
+
+def get_extension_from_mime(mime):
+    """
+    Maps MIME types to common file extensions.
+
+    Args:
+        mime: MIME type of the file.
+
+    Returns:
+        The appropriate file extension or None if unknown.
+    """
+
+    # Expand this mapping as needed
+    mime_to_extension = {
+        "application/octet-stream": ".octet",
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/gif": ".gif",
+        "image/bmp": ".bmp",
+        "image/webp" : ".webp",
+        "image/tiff": ".tiff",
+        "application/pdf": ".pdf",
+        "video/mp4": ".mp4",
+        "video/avi": ".avi",
+        "video/quicktime": "quicktime",
+        "application/zip": ".zip",
+        "audio/mpeg": "mpeg",
+        "audio/wav": "wav",
+        "audio/ogg": ".ogg",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
+        "text/plain": ".txt",
+        "application/json": ".json",
+        # ... other mappings
+    }
+    return mime_to_extension.get(mime)
+
+def get_mime_type(file_extension):
+  """Returns the MIME type based on the file extension."""
+  if file_extension == "application/octet-stream":
+      return file_extension
+  else:
+    file_extension = file_extension.lower()  # Convert to lowercase for consistency
+
+    if file_extension == ".jpg" or file_extension == ".jpeg":
+      return "image/jpeg"
+    elif file_extension == ".png":
+      return "image/png"
+    elif file_extension == ".gif":
+      return "image/gif"
+    elif file_extension == ".pdf":
+      return "application/pdf"
+    elif file_extension == ".webp":
+      return "image/webp"
+    elif file_extension == ".txt":
+      return "text/plain"
+    elif file_extension == ".docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif file_extension  == ".xlsx":
+      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    elif file_extension == ".json":
+      return "application/json"
+    elif file_extension == ".octet":
+      return "application/octet-stream"
+    else:
+      return "application/octet-stream" # Or handle unknown extensions as needed
+
+def extract_path_after_bucket(bucket_name, local_path):
+  """Extracts the path after the bucket name from the local path.
+
+  Args:
+    bucket_name: The name of the bucket.
+    local_path: The full local path.
+
+  Returns:
+    The path after the bucket name, or None if the bucket name is not found.
+  """
+
+  bucket_dir = os.path.join(os.path.sep, bucket_name)
+  index = local_path.find(bucket_dir)
+  if index != -1:
+    return local_path[index + len(bucket_dir):]
+  else:
+    return None
 
 class minio:
     def __init__(self):
@@ -67,36 +218,80 @@ class minio:
         object_minio_address = []
         objects = self.second_login_var.list_objects(bucket_name,prefix='',recursive=True)
         for obj in objects:
-          object_minio_address.append(obj.object_name)
-                
-
+            object_minio_address.append(obj.object_name)
+        print("Remote", object_minio_address)
+        extenstions = [".png",".jpg",".jpeg",".thumbnail",".pdf",".text",".txt",".xlsx"]
+        print("objects exist in bucket count is ", len(object_minio_address))
         for root, _ , files in os.walk(cosntructed_path):
             for file in files:
                 counter_name = counter_name + 1
 
                 join_paths = os.path.join( root , file)
                 parts = join_paths.split(bucket_name, 1)
-        #         if len(parts) > 0:
         # # Extract the object address (relative path within the bucket)
         # #add dict in list file
-
-                object_address = str(parts[1].strip("/"))
-          #         else:
-                object_addresses.append(object_address)
+        #>uncomment if you need to add extenstion on file names
+                # for b in extenstions:
+                #   if b in join_paths:
+                #     print(join_paths , "it has",b)
+                #     object_addresses.append(join_paths)
+                #   else:
+                #     object_address_ext= add_extension(join_paths)
+                #     object_addresses.append(object_address_ext)
+                #     print(object_address_ext)           
+        #/>uncomment if you need to add extenstion on file names 
+                object_addresses.append(join_paths)
+        final_path_list = []
+        
+        for i in object_minio_address:
+          final_path = local_path + bucket_name + "/" + i
+          final_path_list.append(final_path)
         for a in object_addresses:
-           if a in object_minio_address:
-             print("object exist",a)
+           print("for 1")
+           part_for_two = a.split(bucket_name, 1)
+           part_for_two_complete = os.path.normpath(str(part_for_two[1]))
+           cosntructed_path_two = local_path  + bucket_name + part_for_two_complete     
+           if cosntructed_path_two in final_path_list:
+            print("if 1")
+
+            print("object exist",part_for_two_complete)
+            
            else:
-              print("uploading",a)
-              final_path = local_path + bucket_name + "/" + a
-              self.second_login_var.fput_object(bucket_name, a , final_path)
-              
+            print("if 1 else")
+
+            for s in extenstions:
+              print("for 2")
+ 
+              if s in part_for_two_complete:
+                print("if 2 ")
+                print( "has extention", part_for_two_complete)
+                self.second_login_var.fput_object(bucket_name, part_for_two_complete , a )
+
+              else:
+                
+                print("if 2 else")
+                print("before extentsion",a)
+                file_extension = show_extension(a)
+                file_meme = get_mime_type(file_extension)
+                part_for_two = a.split(bucket_name, 1)
+                print("uploading",part_for_two_complete)
+                
+                self.second_login_var.fput_object(bucket_name, part_for_two_complete , a ,content_type=file_meme)
+                break
+
+           #   final_path = local_path + bucket_name + "/" + a
+              #self.second_login_var.fput_object(bucket_name, a , final_path,content_type=file_meme)
+               # ext_file = get_extension_from_mime(os.walk(a))
+          #  print(ext_file)
+           #     final_path = local_path + bucket_name + "/" + a
+ #           sel#f.second_login_var.put_object(bucket_name, a , final_path,content_type=)
                 # try:
                 #     # Attempt to get object stat (raises an exception if it doesn't exist)
                 #     self.second_login_var.stat_object(bucket_name, address)
                 #     print(f"Object '{address}' already exists in the bucket.")
                 #     continue
-                # except Exception as err:
+                # except Except
+                # ion as err:
                 #     # Likely a NoSuchKey error if the object doesn't exist
                 #     if "NoSuchKey" in str(err):
                 #         print(f"Uploading object: {address}")
@@ -106,11 +301,14 @@ class minio:
                 #     print(len(object_addresses))
     def list_file(self,bucket,type):
       if type == "download":
+        counter = 0
         self.login_var = self.login(MINIO_ADDRESS,MINIO_ACCESS_KEY,MINIO_SECRET_KEY)
         objects = self.login_var.list_objects(bucket,recursive=True)
         for obj in objects:
+          counter = 1 + counter
  #        print(obj.object_name,obj.etag,obj.last_modified,obj.size,obj.version_id)
           print(obj.object_name)
+        print(counter)
       if type == "upload":
         self.login_var = self.login(MINIO_SECOND_ADDRES,MINIO_SECOND_ACCESS_KEY,MINIO_SECOND_SECRET_KEY)
         objects = self.login_var.list_objects(bucket,recursive=True)
@@ -298,8 +496,9 @@ class minio:
 #                               elapsed_str, left_str, rate)
 
 #######################################PROGRESS CLASS########################
-#minio().download_object("hamrahcard",'/home/mohammadreza/minio')
-#minio().upload_object("/home/mohammadreza/minio/","hamrahcard","/")
+
 #minio().download_object("bucket",'/home/mohammadreza/minio')
-minio().list_file("hamrahcard","download")
+minio().upload_object("/home/mohammadreza/minio/","bucket","/")
+#minio().download_object("bucket",'/home/mohammadreza/minio')
+#minio().list_file("bucket","upload")
 #minio().upload_object("/home/mohammadreza/minio/bucket/","bucket","/")
