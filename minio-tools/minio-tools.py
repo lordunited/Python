@@ -497,8 +497,8 @@ class minio:
 
 #######################################PROGRESS CLASS########################
 
+#minio().download_object("promissory",'/home/mohammadreza/minio')
+minio().upload_object("/home/mohammadreza/minio/","123","/")
 #minio().download_object("bucket",'/home/mohammadreza/minio')
-minio().upload_object("/home/mohammadreza/minio/","bucket","/")
-#minio().download_object("bucket",'/home/mohammadreza/minio')
-#minio().list_file("bucket","upload")
+#minio().list_file("promissory","download")
 #minio().upload_object("/home/mohammadreza/minio/bucket/","bucket","/")
