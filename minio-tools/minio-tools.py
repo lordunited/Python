@@ -45,157 +45,26 @@ client_second = Minio(MINIO_SECOND_ADDRES,access_key=MINIO_SECOND_ACCESS_KEY,sec
 ###
 #using self in class is  way to call def of class in another def. we call it instance. 
 
-def check_file_type(file_path):
-  """
-  Checks the file type of a given file.
-
-  Args:
-    file_path: The path to the file.
-
-  Returns:
-    A tuple of (file_extension, mime_type).
-  """
-
-  # Get the file extension
-  file_extension = os.path.splitext(file_path)[1].lower()
-
-  # Get the MIME type
-  mime_type, _ = mimetypes.guess_type(file_path)
-
-  return file_extension, mime_type
-
-def show_extension(file_path):
-    """
-    Adds an appropriate extension to a file path.
-
-    Args:
-        file_path: Path to the file.
-
-    Returns:
-        The updated file path with an extension.
-    """
-
-    base_name, ext = os.path.splitext(file_path)
-
-    if ext:
-        return file_path  # File already has an extension
-
-    mime = magic.from_file(file_path, mime=True)
-    extension = get_extension_from_mime(mime)
-
-    if extension:
-        return extension
 
 
 
-def add_extension(file_path):
-    """
-    Adds an appropriate extension to a file path.
+# def extract_path_after_bucket(bucket_name, local_path):
+#   """Extracts the path after the bucket name from the local path.
 
-    Args:
-        file_path: Path to the file.
+#   Args:
+#     bucket_name: The name of the bucket.
+#     local_path: The full local path.
 
-    Returns:
-        The updated file path with an extension.
-    """
+#   Returns:
+#     The path after the bucket name, or None if the bucket name is not found.
+#   """
 
-    base_name, ext = os.path.splitext(file_path)
-
-    if ext:
-        return file_path  # File already has an extension
-
-    mime = magic.from_file(file_path, mime=True)
-    extension = get_extension_from_mime(mime)
-
-    if extension:
-        return base_name + extension
-
-    return base_name + ".bin"  # Default extension
-
-def get_extension_from_mime(mime):
-    """
-    Maps MIME types to common file extensions.
-
-    Args:
-        mime: MIME type of the file.
-
-    Returns:
-        The appropriate file extension or None if unknown.
-    """
-
-    # Expand this mapping as needed
-    mime_to_extension = {
-        "application/octet-stream": ".octet",
-        "image/jpeg": ".jpg",
-        "image/png": ".png",
-        "image/gif": ".gif",
-        "image/bmp": ".bmp",
-        "image/webp" : ".webp",
-        "image/tiff": ".tiff",
-        "application/pdf": ".pdf",
-        "video/mp4": ".mp4",
-        "video/avi": ".avi",
-        "video/quicktime": "quicktime",
-        "application/zip": ".zip",
-        "audio/mpeg": "mpeg",
-        "audio/wav": "wav",
-        "audio/ogg": ".ogg",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
-        "text/plain": ".txt",
-        "application/json": ".json",
-        # ... other mappings
-    }
-    return mime_to_extension.get(mime)
-
-def get_mime_type(file_extension):
-  """Returns the MIME type based on the file extension."""
-  if file_extension == "application/octet-stream":
-      return file_extension
-  else:
-    file_extension = file_extension.lower()  # Convert to lowercase for consistency
-
-    if file_extension == ".jpg" or file_extension == ".jpeg":
-      return "image/jpeg"
-    elif file_extension == ".png":
-      return "image/png"
-    elif file_extension == ".gif":
-      return "image/gif"
-    elif file_extension == ".pdf":
-      return "application/pdf"
-    elif file_extension == ".webp":
-      return "image/webp"
-    elif file_extension == ".txt":
-      return "text/plain"
-    elif file_extension == ".docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    elif file_extension  == ".xlsx":
-      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    elif file_extension == ".json":
-      return "application/json"
-    elif file_extension == ".octet":
-      return "application/octet-stream"
-    else:
-      return "application/octet-stream" # Or handle unknown extensions as needed
-
-def extract_path_after_bucket(bucket_name, local_path):
-  """Extracts the path after the bucket name from the local path.
-
-  Args:
-    bucket_name: The name of the bucket.
-    local_path: The full local path.
-
-  Returns:
-    The path after the bucket name, or None if the bucket name is not found.
-  """
-
-  bucket_dir = os.path.join(os.path.sep, bucket_name)
-  index = local_path.find(bucket_dir)
-  if index != -1:
-    return local_path[index + len(bucket_dir):]
-  else:
-    return None
+#   bucket_dir = os.path.join(os.path.sep, bucket_name)
+#   index = local_path.find(bucket_dir)
+#   if index != -1:
+#     return local_path[index + len(bucket_dir):]
+#   else:
+#     return None
 
 class minio:
     def __init__(self):
@@ -220,7 +89,7 @@ class minio:
         for obj in objects:
             object_minio_address.append(obj.object_name)
         print("Remote", object_minio_address)
-        extenstions = [".png",".jpg",".jpeg",".thumbnail",".pdf",".text",".txt",".xlsx"]
+        extenstions = [".png",".jpg",".svg",".jpeg",".thumbnail",".pdf",".text",".txt",".xlsx"]
         print("objects exist in bucket count is ", len(object_minio_address))
         for root, _ , files in os.walk(cosntructed_path):
             for file in files:
@@ -253,6 +122,7 @@ class minio:
            cosntructed_path_two = local_path  + bucket_name + part_for_two_complete     
            if cosntructed_path_two in final_path_list:
             print("if 1")
+            content_type = magic.from_file(a, mime=True)
 
             print("object exist",part_for_two_complete)
             
@@ -271,12 +141,10 @@ class minio:
                 
                 print("if 2 else")
                 print("before extentsion",a)
-                file_extension = show_extension(a)
-                file_meme = get_mime_type(file_extension)
-                part_for_two = a.split(bucket_name, 1)
-                print("uploading",part_for_two_complete)
+                content_type = magic.from_file(a, mime=True)
+                print("uploading",part_for_two_complete,content_type)
                 
-                self.second_login_var.fput_object(bucket_name, part_for_two_complete , a ,content_type=file_meme)
+                self.second_login_var.fput_object(bucket_name, part_for_two_complete , a ,content_type=content_type)
                 break
 
            #   final_path = local_path + bucket_name + "/" + a
@@ -497,8 +365,8 @@ class minio:
 
 #######################################PROGRESS CLASS########################
 
-#minio().download_object("promissory",'/home/mohammadreza/minio')
-minio().upload_object("/home/mohammadreza/minio/","123","/")
+#minio().download_object("hamrahcard",'/home/mohammadreza/minio')
+minio().upload_object("/home/mohammadreza/minio/","hamrahcard","/")
 #minio().download_object("bucket",'/home/mohammadreza/minio')
 #minio().list_file("promissory","download")
 #minio().upload_object("/home/mohammadreza/minio/bucket/","bucket","/")
